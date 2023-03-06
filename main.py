@@ -158,7 +158,7 @@ class MainApp(App):
             self.msg.text = ""
             self.msg.text = msg [5:len(msg)]
             Clock.schedule_once(self.apaga_msg, 5) # programa a função que apaga a linha de msg para ser executada após
-                                                   # 5 segundos a exibição da msg
+                                                   # 5 segundos da exibição da msg
 
         if msg  [0:5] == "senha": # Exibe a mensagem na linha de mensagens e le a senha
             self.servico = "senha"
