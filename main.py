@@ -66,6 +66,7 @@ class MainApp(App):
         self.last_was_operator = None
         self.last_button = None
         self.lerSenha = False
+        self.lerCartao = False
         self.conexao = None
         self.servico = ''
         self.msgstatus = ''
@@ -73,7 +74,7 @@ class MainApp(App):
         self.msg = Label(text="Pin Pad inicializado\n", font_size=30,
                         )
         self.solution = TextInput(
-            multiline=False, readonly=True, halign="right", font_size=50, password=True
+            multiline=False, readonly=True, halign="right", font_size=50
         )
         main_layout.add_widget(self.msg)
         main_layout.add_widget(self.solution)
@@ -119,23 +120,26 @@ class MainApp(App):
                 self.conexao.write(senha)
                 self.lerSenha = False
                 self.msg.text = "Aguarde. Em processamento ..."
+            elif self.lerCartao and len(self.solution.text) > 0:
+                cartao = self.solution.text.encode('utf-8')
+                self.conexao.write(cartao)
+                self.lerCartao = False
+                self.msg.text = "Aguarde. Em processamento ..."
             self.solution.text = ""
         elif button_text == "Anula":
-            if self.lerSenha:
+            if self.lerSenha or self.lerCartao:
                 msg = button_text.encode('utf-8')
                 self.conexao.write(msg)
                 self.lerSenha = False
+                self.lerCartao = False
             self.solution.text = ""
         else:
-            new_text = current + button_text
+            if self.lerCartao:
+                new_text = current + self.check_cartao(button_text)
+            else:
+                new_text = current + button_text
             self.solution.text = new_text
         self.last_button = button_text
-
-    def on_solution(self, instance):
-        text = self.solution.text
-        if text:
-            solution = str(eval(self.solution.text))
-            self.solution.text = solution
 
     def handle_message(self, msg):
         """ Trata a mensagem recebida do PDV, dependendo do código de servço"""
@@ -164,7 +168,15 @@ class MainApp(App):
             self.servico = "senha"
             self.msg.text = ""
             self.msg.text = msg [5:len(msg)]
+            self.solution.password=True
             self.lerSenha = True
+
+        if msg  [0:5] == "card ": # Exibe a mensagem na linha de mensagens e le a senha
+            self.servico = "cartao"
+            self.msg.text = ""
+            self.msg.text = msg [5:len(msg)]
+            self.solution.password=False
+            self.lerCartao = True
 
         if msg  [0:5] == "sair ": # Encerra o Pin Pad
             self.servico = "sair"
@@ -181,6 +193,22 @@ class MainApp(App):
         """ Função chamada via evento de callback, para limpor a linha de mensagem, X segundos após a exibição
             e exibir a msg de status """
         self.msg.text = self.msgstatus
+
+    def check_cartao(self, caracter):
+        """ Consiste e formata o número do cartão: 9999.9999.9999.9999.
+            Retorna a nova substring, e se a string de entrada é válida ou não
+            """
+
+        # print(caracter)
+
+        if not caracter.isdecimal() or len(self.solution.text + caracter) > 19:
+            return ''
+        elif len(self.solution.text + caracter) == 4 or \
+                len(self.solution.text + caracter) == 9 or \
+                len(self.solution.text + caracter) == 14:
+            return caracter + "."
+        else:
+            return caracter
 
 if __name__ == "__main__":
 
