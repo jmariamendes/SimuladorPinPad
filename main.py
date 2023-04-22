@@ -1,4 +1,4 @@
-__version__ = '1.1'
+__version__ = '1.2'
 
 """              Simulador do Pin Pad 
             - app para simular um Pin Pad virtual no Android, para a captura de senha 
@@ -71,7 +71,7 @@ class MainApp(App):
         self.servico = ''
         self.msgstatus = ''
         main_layout = BoxLayout(orientation="vertical")
-        self.msg = Label(text="Pin Pad inicializado\n", font_size=30,
+        self.msg = Label(text="Pin Pad inicializado - versão 1.2\n", font_size=30,
                         )
         self.solution = TextInput(
             multiline=False, readonly=True, halign="right", font_size=50
@@ -171,7 +171,7 @@ class MainApp(App):
             self.solution.password=True
             self.lerSenha = True
 
-        if msg  [0:5] == "card ": # Exibe a mensagem na linha de mensagens e le a senha
+        if msg  [0:5] == "card ": # Exibe a mensagem na linha de mensagens e le o número do cartão
             self.servico = "cartao"
             self.msg.text = ""
             self.msg.text = msg [5:len(msg)]
